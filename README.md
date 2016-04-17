@@ -47,9 +47,9 @@ sayMyName({firstName: "Werner"}); // Missing required property: lastName in 1 ar
 
 The first question may be: why not to use TypeScript, Flow or other typed languages for js?
 
-The question is yes, please use them, they are really good ones, but if you don't want to bring transpilers into
-your projects, duckless maybe that what you need.
+The answer is yes, please use them, they are really good ones, but if you don't want to bring transpilers into
+your projects, `duckless` maybe that what you need.
 
 The second point is that after compiling you will still have JavaScript and in some cases
 (for example when data comes externally) errors still can occur.
- Using duckless at least you will get a good point to debug the issue.
+ Using `duckless` at least you will get a good point to debug the issue.
