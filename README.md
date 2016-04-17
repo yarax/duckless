@@ -1,6 +1,6 @@
 # Duckless
 
-Duckless is a wrapper for you functions, that allows you to use Haskell style function definitions.
+Duckless is a wrapper for your functions, that allows you to use Haskell style function definitions.
 After that, while runtime, if your function was called in improper way it will be thrown a clear human-readable exception.
 
 Currently supports:
