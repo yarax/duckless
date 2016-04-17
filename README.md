@@ -1,12 +1,13 @@
 # Duckless
 
 Duckless is a wrapper for you functions, that allows you to use Haskell style function definitions.
-After that, while runtime, if your function was called in improper way it will be thrown clear human-readable exception.
-Duckless supports:
+After that, while runtime, if your function was called in improper way it will be thrown a clear human-readable exception.
+
+Currently supports:
 * Number of arguments
 * Base JavaScript types
-* Object types, based on JSON Schema
-* Return value of the function
+* Complex types, based on JSON Schema
+* Returned value of the function
 
 ## How to use
 
@@ -44,9 +45,11 @@ sayMyName({firstName: "Werner"}); // Missing required property: lastName in 1 ar
 
 ## Why?
 
-The first question may be, why not to use TypeScript, Flow or other typed languages for js.
+The first question may be: why not to use TypeScript, Flow or other typed languages for js?
+
 The question is yes, please use them, they are really good ones, but if you don't want to bring transpilers into
 your projects, duckless maybe that what you need.
-The second point is that after compiling you will have still javascript and in some cases
+
+The second point is that after compiling you will still have JavaScript and in some cases
 (for example when data comes externally) errors still can occur.
  Using duckless at least you will get a good point to debug the issue.
