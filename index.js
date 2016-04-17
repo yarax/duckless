@@ -1,74 +1,56 @@
-/**
-1. easier debugging: `param n should be a number but string given`
-2. pure functional style
-3. 
-**/
+var tv4 = require('tv4');
 var TYPES = {};
 function Type(schema) {
-	TYPES[schema.title.toLowerCase()] = schema;
+    if (!schema.title) {
+        throw new Error('Please provide schema title');
+    }
+    TYPES[schema.title.toLowerCase()] = schema;
+    this.schema = schema;
 }
 
-var Human = new Type({
-	"title": "Human",
-	"type": "object",
-	"properties": {
-		"firstName": {
-			"type": "string"
-		},
-		"lastName": {
-			"type": "string"
-		},
-		"age": {
-			"description": "Age in years",
-			"type": "integer",
-			"minimum": 0
-		}
-	},
-	"required": ["firstName", "lastName"]
-});
-
 function checkType(data, type, position) {
-	type = type.toLowerCase();
-	var objType = TYPES[type];
-	if (objType) {
-		if (typeof data !== 'object') throw new Error(`Typed ${position} "${type}" must be an object`);
-		objType.required.forEach((prop) => {
-			if (!data[prop]) throw new Error(`No required field "${prop}" in ${position} typed "${type}"`);
-		});
-	} else {
-		if (typeof data !== type) throw new Error(`Wrong type in ${position}, expected "${type}", given "${typeof data}"`);
-	}
+    var origType = type;
+    type = type.toLowerCase();
+    var objSchema = TYPES[type];
+    if (objSchema) {
+        if (typeof data !== 'object') throw new Error('Typed ' + position + ' "' + origType + '" must be an object');
+        var res = tv4.validate(data, objSchema);
+        if (!res) {
+            tv4.error.message = tv4.error.message + ' in ' + position + ' "' + origType + '"';
+            throw new Error(tv4.error);
+        }
+    } else if (typeof data === 'object') {
+        throw new Error('Unknown type "' + origType + '"');
+    } else {
+        if (typeof data !== type) throw new Error('Wrong type in ' + position + ', expected "' + origType + '", given "' + typeof data + '"');
+    }
 }
 
 var def = function (func, def) {
-	def = def.replace(/^\s*::\s*/, '');
-	var ps = def.split(/\s+\-\>\s/);
-	return function () {
-		if (arguments.length < ps.length - 1) {
-			throw new Error('Too few arguments');
-		}
-		ps.forEach((type, i) => {
-			if (i === ps.length - 1) return;
-			var arg = arguments[i];
-			checkType(arg, type, `${i+1} argument `);
-		});
-		//var args = Array.prototype.slice.call(arguments);
-		//func.apply(func, args);
-		var res = func(...arguments);
-		checkType(res, ps[ps.length-1], `returned value`);
-		return res;
-	}
-}
-
-var sayMyName = function (human){
-	return human.firstName + ' ' + human.lastName;
-	//return 1;
+    def = def.replace(/^\s*::\s*/, '');
+    if (!def) {
+        throw new Error('Function definition must contain at least returned value');
+    }
+    var ps = def.split(/\s+\-\>\s/);
+    return function () {
+        if (arguments.length < ps.length - 1) {
+            throw new Error('Too few arguments');
+        }
+        ps.forEach((type, i) => {
+            if (i === ps.length - 1) return;
+            var arg = arguments[i];
+            checkType(arg, type, (i + 1) + ' argument');
+        });
+        var res = func.apply(func, arguments);
+        checkType(res, ps[ps.length - 1], 'returned value');
+        return res;
+    }
 };
-sayMyName = def(sayMyName, ':: Human -> String');
 
-var name = sayMyName({firstName: "Roman", lastName: "Krivtsov"});
-console.log(name);
-
+module.exports = {
+    def,
+    Type
+};
 
 
 
