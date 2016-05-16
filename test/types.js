@@ -1,5 +1,6 @@
 var def = require('../').def;
 var Type = require('../').Type;
+var compileDefinition = require('../').compileDefinition;
 var assert = require('assert');
 
 var Human = new Type({
@@ -41,6 +42,15 @@ describe('Types checks', function () {
                 sayMyName({firstName: "Werner"});
             },
             /Missing required property: lastName in 1 argument "Human"/
+        );
+    });
+
+    it('Should throw exception title already defined', () => {
+        assert.throws(
+            () => {
+                new Type({title: "Human"})
+            },
+            /Schema with title Human already defined/
         );
     });
 
@@ -101,4 +111,24 @@ describe('Types checks', function () {
         var res = sayMyName({firstName: 'Werner', lastName: 'Heisenberg'});
         assert.equal(res, 'Werner Heisenberg');
     });
+
+    it('Should parse definition with type variables', () => {
+        assert.deepEqual([ 't', 'Eq', 'Num' ], compileDefinition(' :: (Eq a, Num a, Num a1) => t -> a -> a1'));
+    });
+
+    it('Should parse definition with type variables (no parentheses)', () => {
+        assert.deepEqual([ 't', 'Num' ], compileDefinition(':: Num a => t -> a'));
+    });
+
+    it('Should parse definition without type variables', () => {
+        assert.deepEqual([ 't', 'a' ], compileDefinition('::t -> a'));
+    });
+
+    it('Should throw Object, Array, Function are not allowed', () => {
+        var sayMyName = human => `${human.firstName} ${human.lastName}`;
+        sayMyName = def(sayMyName, ':: Human -> Object');
+        var res = sayMyName({firstName: 'Werner', lastName: 'Heisenberg'});
+        assert.equal(res, 'Werner Heisenberg');
+    });
+
 });
