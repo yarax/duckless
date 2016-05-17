@@ -126,9 +126,13 @@ describe('Types checks', function () {
 
     it('Should throw Object, Array, Function are not allowed', () => {
         var sayMyName = human => `${human.firstName} ${human.lastName}`;
-        sayMyName = def(sayMyName, ':: Human -> Object');
-        var res = sayMyName({firstName: 'Werner', lastName: 'Heisenberg'});
-        assert.equal(res, 'Werner Heisenberg');
+        assert.throws(
+            () => {
+                def(sayMyName, ':: Human -> Object')
+            },
+            /Not allowed to use Object, Function and Array types/
+        );
+
     });
 
 });

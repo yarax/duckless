@@ -12,7 +12,8 @@ function Type(schema) {
     this.schema = schema;
 }
 
-function checkType(data, type, position) {
+function checkVarType(data, type, position) {
+    checkType(type);
     var origType = type;
     type = type.toLowerCase();
     var objSchema = TYPES[type];
@@ -35,21 +36,19 @@ function checkType(data, type, position) {
  * @param arguments {Array} parts, params splitted by "->"
  * @return arguments {Array} parts
  **/
-function checkWithTypeVariables(arguments) {
+function checkWithTypeVariables(args) {
     var typedVarsRegexp = new RegExp('\\\(?(.*?)\\\)?\\\s*=>');
-    var typeVars = arguments[0].match(typedVarsRegexp);
+    var typeVars = args[0].match(typedVarsRegexp);
     if (typeVars) {
-        arguments[0] = arguments[0].replace(typedVarsRegexp, '');
+        args[0] = args[0].replace(typedVarsRegexp, '');
         typeVars = typeVars[1].split(/,\s*/).map(function(varWithType) {
             var split = varWithType.split(/\s+/);
             return {type: split[0], var: split[1]};
         });
-        arguments = arguments.map(function (param) {
+        args = args.map(function (param) {
             param = param.trim();
             typeVars.some(function(typeVar) {
-                if (['Object', 'Function', 'Array'].indexOf(typeVar) !== -1) {
-                    throw new Error('Not allowed to use Object, Function and Array types');
-                }
+                checkType(typeVar.type);
                 if (param === typeVar.var) {
                     param = typeVar.type;
                     return true;
@@ -58,7 +57,7 @@ function checkWithTypeVariables(arguments) {
             return param;
         });
     }
-    return arguments;
+    return args;
 }
 
 function compileDefinition(def) {
@@ -71,19 +70,25 @@ function compileDefinition(def) {
     return ps;
 }
 
+function checkType(type) {
+    if (['Object', 'Function', 'Array'].indexOf(type) !== -1) {
+        throw new Error('Not allowed to use Object, Function and Array types');
+    }
+}
+
 var def = function (func, def) {
     var args = compileDefinition(def);
     return function () {
-        if (args.length < args.length - 1) {
+        if (arguments.length < args.length - 1) {
             throw new Error('Too few arguments');
         }
         args.forEach((type, i) => {
             if (i === args.length - 1) return;
-            var arg = args[i];
-            checkType(arg, type, (i + 1) + ' argument');
+            var arg = arguments[i];
+            checkVarType(arg, type, `${i+1} argument`);
         });
         var res = func.apply(func, arguments);
-        checkType(res, args[args.length - 1], 'returned value');
+        checkVarType(res, args[args.length - 1], 'returned value');
         return res;
     }
 };
