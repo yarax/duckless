@@ -33,8 +33,8 @@ function checkVarType(data, type, position) {
 
 /**
  * checkWithTypeVariables
- * @param arguments {Array} parts, params splitted by "->"
- * @return arguments {Array} parts
+ * @param args {Array} parts, params splitted by "->"
+ * @return args {Array} parts
  **/
 function checkWithTypeVariables(args) {
     var typedVarsRegexp = new RegExp('\\\(?(.*?)\\\)?\\\s*=>');
@@ -67,6 +67,7 @@ function compileDefinition(def) {
     }
     var ps = def.split(/\s+\-\>\s/);
     ps = checkWithTypeVariables(ps);
+    ps.forEach(arg => checkType(arg));
     return ps;
 }
 

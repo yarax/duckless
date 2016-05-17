@@ -132,7 +132,6 @@ describe('Types checks', function () {
             },
             /Not allowed to use Object, Function and Array types/
         );
-
     });
 
 });
